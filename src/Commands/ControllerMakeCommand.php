@@ -97,6 +97,6 @@ class ControllerMakeCommand extends GeneratorCommand
             $stubType = '-plain';
         }
 
-        return "constroller{$stubType}.stub";
+        return "controller{$stubType}.stub";
     }
 }
