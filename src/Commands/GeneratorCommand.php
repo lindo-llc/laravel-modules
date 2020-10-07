@@ -2,10 +2,13 @@
 
 namespace Nwidart\Modules\Commands;
 
+use Illuminate\Support\Str;
 use Illuminate\Console\Command;
-use Nwidart\Modules\Exceptions\FileAlreadyExistException;
+use Nwidart\Modules\Support\Stub;
 use Nwidart\Modules\Generators\FileGenerator;
 use Nwidart\Modules\Traits\ModuleCommandTrait;
+use Nwidart\Modules\Support\Config\GenerateConfigReader;
+use Nwidart\Modules\Exceptions\FileAlreadyExistException;
 
 abstract class GeneratorCommand extends Command
 {
@@ -19,28 +22,186 @@ abstract class GeneratorCommand extends Command
     protected $argumentName = 'name';
 
     /**
-     * Get template contents.
+     * Appendable resource name
      *
-     * @return string
+     * @var null|string
      */
-    abstract protected function getTemplateContents();
+    protected $appendable;
+
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile;
+
+    /**
+     * Specifies default fallback path of the resource.
+     *
+     * @var string
+     */
+    protected $defaultPath = "";
+
+    /**
+     * Destination file extension
+     *
+     * @var string
+     */
+    protected $outputExtension = 'php';
+
+    /**
+     * Generator paths key
+     *
+     * @see config/modules.php
+     * @var string
+     */
+    protected $generatorPathsKey = 'generator.paths';
+
+    /**
+     * Generator config key
+     *
+     * @see config/modules.php
+     * @var string
+     */
+    protected $generatorConfigKey = '';
+
+    /**
+     * Generator config prefix for the $generatorConfigKey
+     *
+     * @var string
+     */
+    protected $generatorConfigPrefix;
+
+    /**
+     * @var string $configKeySeparator
+     */
+    protected $configKeySeparator = '-';
+
+
+    /**
+     * Getter for the stub file
+     *
+     * @return null|string
+     */
+    public function stubFile()
+    {
+        return $this->stubFile;
+    }
+
+    /**
+     * Getter for the appendable
+     *
+     * @return null|string
+     */
+    public function appendable()
+    {
+        return $this->appendable;
+    }
+
+    /**
+     * Get stub file contents
+     *
+     * @return mixed
+     */
+    protected function getTemplateContents()
+    {
+        return (new Stub($this->stubFile(), $this->replaces()))->render();
+    }
+
+    /**
+     * Resource stub replacements
+     *
+     * @return array
+     */
+    public function replaces()
+    {
+        return [
+            // ...
+        ];
+    }
 
     /**
      * Get the destination file path.
      *
      * @return string
      */
-    abstract protected function getDestinationFilePath();
+    protected function getDestinationFilePath()
+    {
+        return  $this->getModulePath() . "/" .
+            GenerateConfigReader::read($this->getGeneratorConfigKey())->getPath() . "/" .
+            $this->resolveFilename() . '.' . $this->outputExtension;
+    }
 
     /**
-     * Execute the console command.
+     * Resolves the filename so that it always starts with capital letter
+     *
+     * @return string
+     */
+    private function resolveFilename()
+    {
+        $filename = str_replace('/', ' ', $this->getFileName());
+        $filename = ucwords(str_replace('\\', ' ', $filename));
+        return trim(str_replace(' ', '/', $filename));
+    }
+
+    /**
+     * Get configurator config key
+     *
+     * @return string
+     */
+    private function getGeneratorConfigKey()
+    {
+        return ($this->generatorConfigPrefix ? $this->generatorConfigPrefix . $this->configKeySeparator : '') .
+            $this->generatorConfigKey;
+    }
+
+    /**
+     * Execute the console command
+     *
+     * @return integer
      */
     public function handle(): int
     {
+        $this->before();
+
+        if ($this->run() != E_ERROR) {
+            $this->after();
+        }
+
+        return 0;
+    }
+
+    /**
+     * Run code before command gets executed
+     *
+     * @return void
+     */
+    public function before()
+    {
+        // ...
+    }
+
+    /**
+     * Run code after command has executed
+     *
+     * @return void
+     */
+    public function after()
+    {
+        // ...
+    }
+
+    /**
+     * Run the console command
+     *
+     * @return integer
+     */
+    private function run(): int
+    {
         $path = str_replace('\\', '/', $this->getDestinationFilePath());
 
-        if (!$this->laravel['files']->isDirectory($dir = dirname($path))) {
-            $this->laravel['files']->makeDirectory($dir, 0777, true);
+        if (!app('files')->isDirectory($dir = dirname($path))) {
+            app('files')->makeDirectory($dir, 0777, true);
         }
 
         $contents = $this->getTemplateContents();
@@ -49,9 +210,11 @@ abstract class GeneratorCommand extends Command
             $overwriteFile = $this->hasOption('force') ? $this->option('force') : false;
             (new FileGenerator($path, $contents))->withFileOverwrite($overwriteFile)->generate();
 
-            $this->info("Created : {$path}");
+            $this->info("Created file " . basename($path));
+
+            return 1;
         } catch (FileAlreadyExistException $e) {
-            $this->error("File : {$path} already exists.");
+            $this->critical("File [ {$path} ] already exists!");
 
             return E_ERROR;
         }
@@ -66,7 +229,7 @@ abstract class GeneratorCommand extends Command
      */
     public function getClass()
     {
-        return class_basename($this->argument($this->argumentName));
+        return class_basename($this->getFileName());
     }
 
     /**
@@ -76,7 +239,12 @@ abstract class GeneratorCommand extends Command
      */
     public function getDefaultNamespace(): string
     {
-        return '';
+        return $this->getModules()->config(
+            $this->generatorPathsKey . '.' . $this->getGeneratorConfigKey() . '.namespace'
+        ) ?: $this->getModules()->config(
+            $this->generatorPathsKey . '.' . $this->getGeneratorConfigKey() . '.path',
+            $this->defaultPath ?: ''
+        );
     }
 
     /**
@@ -88,11 +256,11 @@ abstract class GeneratorCommand extends Command
      */
     public function getClassNamespace($module)
     {
-        $extra = str_replace($this->getClass(), '', $this->argument($this->argumentName));
+        $extra = str_replace($this->getClass(), '', $this->getFileName());
 
         $extra = str_replace('/', '\\', $extra);
 
-        $namespace = $this->laravel['modules']->config('namespace');
+        $namespace = $this->getModules()->config('namespace');
 
         $namespace .= '\\' . $module->getStudlyName();
 
@@ -103,5 +271,21 @@ abstract class GeneratorCommand extends Command
         $namespace = str_replace('/', '\\', $namespace);
 
         return trim($namespace, '\\');
+    }
+
+    /**
+     * Get the file name.
+     *
+     * @return string
+     */
+    protected function getFileName(): string
+    {
+
+        $name = Str::studly($this->argument($this->argumentName));
+        if ($this->appendable() && !Str::contains(strtolower($name), strtolower($this->appendable()))) {
+            $name .= Str::studly($this->appendable());
+        }
+
+        return Str::singular(Str::studly($name));
     }
 }
