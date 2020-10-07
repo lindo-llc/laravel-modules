@@ -120,9 +120,11 @@ class MigrationMakeCommand extends GeneratorCommand
     }
 
     /**
+     * Get the file name.
+     *
      * @return string
      */
-    private function getFileName()
+    protected function getFileName(): string
     {
         return date('Y_m_d_His_') . $this->getSchemaName();
     }
