@@ -16,7 +16,7 @@ abstract class GeneratorCommand extends Command
      *
      * @var string
      */
-    protected $argumentName = '';
+    protected $argumentName = 'name';
 
     /**
      * Get template contents.
