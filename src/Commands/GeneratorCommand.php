@@ -5,9 +5,12 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Exceptions\FileAlreadyExistException;
 use Nwidart\Modules\Generators\FileGenerator;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 
 abstract class GeneratorCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The name of 'name' argument.
      *
@@ -32,7 +35,7 @@ abstract class GeneratorCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $path = str_replace('\\', '/', $this->getDestinationFilePath());
 
@@ -71,7 +74,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return string
      */
-    public function getDefaultNamespace() : string
+    public function getDefaultNamespace(): string
     {
         return '';
     }
