@@ -28,17 +28,37 @@ class CommandMakeCommand extends GeneratorCommand
     protected $name = 'module:make-command';
 
     /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Command';
+
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'command.stub';
+
+    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Generate new Artisan command for the specified module.';
 
-    public function getDefaultNamespace() : string
+    /**
+     * @inheritDoc
+     * @return void
+     */
+    public function replaces()
     {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.command.namespace') ?: $module->config('paths.generator.command.path', 'Console');
+        return [
+            'COMMAND_NAME' => $this->option('command') ?: 'command:name',
+            'NAMESPACE'    => $this->getClassNamespace($this->getModule()),
+            'CLASS'        => $this->getClass(),
+        ];
     }
 
     /**
@@ -64,47 +84,5 @@ class CommandMakeCommand extends GeneratorCommand
         return [
             ['command', null, InputOption::VALUE_OPTIONAL, 'The terminal command that should be assigned.', null],
         ];
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getTemplateContents()
-    {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/command.stub', [
-            'COMMAND_NAME' => $this->getCommandName(),
-            'NAMESPACE'    => $this->getClassNamespace($module),
-            'CLASS'        => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * @return string
-     */
-    private function getCommandName()
-    {
-        return $this->option('command') ?: 'command:name';
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $commandPath = GenerateConfigReader::read('command');
-
-        return $path . $commandPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
     }
 }
