@@ -2,9 +2,7 @@
 
 namespace Nwidart\Modules\Commands;
 
-use Illuminate\Support\Str;
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Stub;
+use Nwidart\Modules\Commands\GeneratorCommand;
 use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
@@ -22,44 +20,36 @@ class EventMakeCommand extends GeneratorCommand
     protected $name = 'module:make-event';
 
     /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Event';
+
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'event.stub';
+
+    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Create a new event class for the specified module';
 
-    public function getTemplateContents()
-    {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/event.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS' => $this->getClass(),
-        ]))->render();
-    }
-
-    public function getDestinationFilePath()
-    {
-        $path       = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $eventPath = GenerateConfigReader::read('event');
-
-        return $path . $eventPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
     /**
-     * @return string
+     * @inheritDoc
+     * @return array
      */
-    protected function getFileName()
+    public function replaces()
     {
-        return Str::studly($this->argument('name'));
-    }
-
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.event.namespace') ?: $module->config('paths.generator.event.path', 'Events');
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
+            'CLASS' => $this->getClass(),
+        ];
     }
 
     /**

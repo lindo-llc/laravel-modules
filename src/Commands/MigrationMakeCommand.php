@@ -112,7 +112,7 @@ class MigrationMakeCommand extends GeneratorCommand
      */
     protected function getDestinationFilePath()
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
+        $path = $this->getModules()->getModulePath($this->getModuleName());
 
         $generatorPath = GenerateConfigReader::read('migration');
 
@@ -151,7 +151,7 @@ class MigrationMakeCommand extends GeneratorCommand
     /**
      * Run the command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         if (parent::handle() === E_ERROR) {
             return E_ERROR;

@@ -33,12 +33,19 @@ class MiddlewareMakeCommand extends GeneratorCommand
      */
     protected $description = 'Create a new middleware class for the specified module.';
 
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
+    /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Middleware';
 
-        return $module->config('paths.generator.filter.namespace') ?: $module->config('paths.generator.filter.path', 'Http/Middleware');
-    }
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'middleware.stub';
 
     /**
      * Get the console command arguments.
@@ -54,35 +61,14 @@ class MiddlewareMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/middleware.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
             'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $middlewarePath = GenerateConfigReader::read('filter');
-
-        return $path . $middlewarePath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
+        ];
     }
 }

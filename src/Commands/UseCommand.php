@@ -4,10 +4,13 @@ namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class UseCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -25,19 +28,19 @@ class UseCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $module = Str::studly($this->argument('module'));
 
-        if (!$this->laravel['modules']->has($module)) {
-            $this->error("Module [{$module}] does not exists.");
+        if (!$this->getModules()->has($module)) {
+            $this->critical("{$module} module does not exists.");
 
             return E_ERROR;
         }
 
-        $this->laravel['modules']->setUsed($module);
+        $this->getModules()->setUsed($module);
 
-        $this->info("Module [{$module}] used successfully.");
+        $this->success("{$module} module is not being used");
 
         return 0;
     }

@@ -3,9 +3,12 @@
 namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 
 class UnUseCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -23,11 +26,11 @@ class UnUseCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->laravel['modules']->forgetUsed();
 
-        $this->info('Previous module used successfully forgotten.');
+        $this->success('Previous module used successfully forgotten.');
 
         return 0;
     }

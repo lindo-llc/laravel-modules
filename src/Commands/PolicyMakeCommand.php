@@ -27,18 +27,18 @@ class PolicyMakeCommand extends GeneratorCommand
     protected $name = 'module:make-policy';
 
     /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'policy.plain.stub';
+
+    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Create a new policy class for the specified module.';
-
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.policies.namespace') ?: $module->config('paths.generator.policies.path', 'Policies');
-    }
 
     /**
      * Get the console command arguments.
@@ -54,35 +54,14 @@ class PolicyMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/policy.plain.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
             'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $policyPath = GenerateConfigReader::read('policies');
-
-        return $path . $policyPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
+        ];
     }
 }

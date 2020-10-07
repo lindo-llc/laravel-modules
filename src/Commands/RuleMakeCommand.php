@@ -27,18 +27,18 @@ class RuleMakeCommand extends GeneratorCommand
     protected $name = 'module:make-rule';
 
     /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'rule.stub';
+
+    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Create a new validation rule for the specified module.';
-
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.rules.namespace') ?: $module->config('paths.generator.rules.path', 'Rules');
-    }
 
     /**
      * Get the console command arguments.
@@ -54,35 +54,14 @@ class RuleMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/rule.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
             'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $rulePath = GenerateConfigReader::read('rules');
-
-        return $path . $rulePath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
+        ];
     }
 }

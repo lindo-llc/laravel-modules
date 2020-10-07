@@ -28,12 +28,19 @@ class MailMakeCommand extends GeneratorCommand
 
     protected $argumentName = 'name';
 
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
+    /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Mail';
 
-        return $module->config('paths.generator.emails.namespace') ?: $module->config('paths.generator.emails.path', 'Emails');
-    }
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'mail.stub';
 
     /**
      * Get the console command arguments.
@@ -49,39 +56,14 @@ class MailMakeCommand extends GeneratorCommand
     }
 
     /**
-     * Get template contents.
-     *
+     * @inheritDoc
      * @return string
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/mail.stub', [
-            'NAMESPACE' => $this->getClassNamespace($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
             'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * Get the destination file path.
-     *
-     * @return string
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $mailPath = GenerateConfigReader::read('emails');
-
-        return $path . $mailPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
+        ];
     }
 }

@@ -25,7 +25,7 @@ class ListCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->table(['Name', 'Status', 'Order', 'Path'], $this->getRows());
 
@@ -58,19 +58,19 @@ class ListCommand extends Command
     {
         switch ($this->option('only')) {
             case 'enabled':
-                return $this->laravel['modules']->getByStatus(1);
+                return $this->getModules()->getByStatus(1);
                 break;
 
             case 'disabled':
-                return $this->laravel['modules']->getByStatus(0);
+                return $this->getModules()->getByStatus(0);
                 break;
 
             case 'ordered':
-                return $this->laravel['modules']->getOrdered($this->option('direction'));
+                return $this->getModules()->getOrdered($this->option('direction'));
                 break;
 
             default:
-                return $this->laravel['modules']->all();
+                return $this->getModules()->all();
                 break;
         }
     }

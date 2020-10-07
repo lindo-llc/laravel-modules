@@ -18,6 +18,19 @@ class FactoryMakeCommand extends GeneratorCommand
      * @var string
      */
     protected $argumentName = 'name';
+    /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Factory';
+
+    /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'factory.stub';
 
     /**
      * The console command name.
@@ -44,33 +57,5 @@ class FactoryMakeCommand extends GeneratorCommand
             ['name', InputArgument::REQUIRED, 'The name of the factory.'],
             ['module', InputArgument::OPTIONAL, 'The name of module will be used.'],
         ];
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getTemplateContents()
-    {
-        return (new Stub('/factory.stub'))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $factoryPath = GenerateConfigReader::read('factory');
-
-        return $path . $factoryPath->getPath() . '/' . $this->getFileName();
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name')) . '.php';
     }
 }

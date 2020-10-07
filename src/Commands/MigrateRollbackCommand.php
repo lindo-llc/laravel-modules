@@ -5,12 +5,14 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Migrations\Migrator;
 use Nwidart\Modules\Traits\MigrationLoaderTrait;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class MigrateRollbackCommand extends Command
 {
     use MigrationLoaderTrait;
+    use ModuleCommandTrait;
 
     /**
      * The console command name.
@@ -34,7 +36,7 @@ class MigrateRollbackCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->module = $this->laravel['modules'];
 
@@ -47,7 +49,7 @@ class MigrateRollbackCommand extends Command
         }
 
         foreach ($this->module->getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
+            $this->info('Running for module: <info>' . $module->getName() . '</info>');
 
             $this->rollback($module);
         }
@@ -78,13 +80,13 @@ class MigrateRollbackCommand extends Command
 
         if (count($migrated)) {
             foreach ($migrated as $migration) {
-                $this->line("Rollback: <info>{$migration}</info>");
+                $this->info("Rolling back: <info>{$migration}</info>");
             }
 
             return;
         }
 
-        $this->comment('Nothing to rollback.');
+        $this->warning('Nothing to rollback');
     }
 
     /**

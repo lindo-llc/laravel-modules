@@ -3,9 +3,12 @@
 namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 
 class SetupCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -23,7 +26,7 @@ class SetupCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $code = $this->generateModulesFolder();
 
@@ -36,7 +39,7 @@ class SetupCommand extends Command
     public function generateModulesFolder()
     {
         return $this->generateDirectory(
-            $this->laravel['modules']->config('paths.modules'),
+            $this->getModules()->config('paths.modules'),
             'Modules directory created successfully',
             'Modules directory already exist'
         );
@@ -48,7 +51,7 @@ class SetupCommand extends Command
     public function generateAssetsFolder()
     {
         return $this->generateDirectory(
-            $this->laravel['modules']->config('paths.assets'),
+            $this->getModules()->config('paths.assets'),
             'Assets directory created successfully',
             'Assets directory already exist'
         );
@@ -62,7 +65,7 @@ class SetupCommand extends Command
      * @param $error
      * @return int
      */
-    protected function generateDirectory($dir, $success, $error) : int
+    protected function generateDirectory($dir, $success, $error): int
     {
         if (!$this->laravel['files']->isDirectory($dir)) {
             $this->laravel['files']->makeDirectory($dir, 0755, true, true);

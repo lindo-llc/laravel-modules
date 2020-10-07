@@ -3,11 +3,13 @@
 namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
-use Nwidart\Modules\Module;
+use Nwidart\Modules\Traits\ModuleMessages;
 use Symfony\Component\Console\Input\InputArgument;
 
 class DisableCommand extends Command
 {
+    use ModuleMessages;
+
     /**
      * The console command name.
      *
@@ -25,7 +27,7 @@ class DisableCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         /**
          * check if user entred an argument
@@ -40,9 +42,9 @@ class DisableCommand extends Command
         if ($module->isEnabled()) {
             $module->disable();
 
-            $this->info("Module [{$module}] disabled successful.");
+            $this->success("{$module} module has been disabled successfully.");
         } else {
-            $this->comment("Module [{$module}] has already disabled.");
+            $this->warning("{$module} module is already disabled.");
         }
 
         return 0;
@@ -62,9 +64,9 @@ class DisableCommand extends Command
             if ($module->isEnabled()) {
                 $module->disable();
 
-                $this->info("Module [{$module}] disabled successful.");
+                $this->success("{$module} module has been disabled successfully.");
             } else {
-                $this->comment("Module [{$module}] has already disabled.");
+                $this->warning("{$module} module is already disabled.");
             }
         }
     }

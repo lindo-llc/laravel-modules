@@ -31,6 +31,12 @@ class ListenerMakeCommand extends GeneratorCommand
     protected $description = 'Create a new event listener class for the specified module';
 
     /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Listener';
+    /**
      * Get the console command arguments.
      *
      * @return array
@@ -56,28 +62,29 @@ class ListenerMakeCommand extends GeneratorCommand
         ];
     }
 
-    protected function getTemplateContents()
+    /**
+     * @inheritDoc
+     * @return array
+     */
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'EVENTNAME' => $this->getEventName($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
+            'EVENTNAME' => $this->getEventName($this->getModule()),
             'SHORTEVENTNAME' => $this->getShortEventName(),
             'CLASS' => $this->getClass(),
-        ]))->render();
+        ];
     }
 
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.listener.namespace') ?: $module->config('paths.generator.listener.path', 'Listeners');
-    }
-
+    /**
+     * Get event name
+     *
+     * @param Module $module
+     * @return void
+     */
     protected function getEventName(Module $module)
     {
-        $namespace = $this->laravel['modules']->config('namespace') . "\\" . $module->getStudlyName();
+        $namespace = $this->getModules()->config('namespace') . "\\" . $module->getStudlyName();
         $eventPath = GenerateConfigReader::read('event');
 
         $eventName = $namespace . "\\" . $eventPath->getPath() . "\\" . $this->option('event');
@@ -85,45 +92,35 @@ class ListenerMakeCommand extends GeneratorCommand
         return str_replace('/', '\\', $eventName);
     }
 
+    /**
+     * Get short event name
+     *
+     * @return string
+     */
     protected function getShortEventName()
     {
         return class_basename($this->option('event'));
     }
 
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $listenerPath = GenerateConfigReader::read('listener');
-
-        return $path . $listenerPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
 
     /**
-     * @return string
+     * @inheritDoc
+     * @return null|string
      */
-    protected function getFileName()
-    {
-        return Str::studly($this->argument('name'));
-    }
-
-    /**
-     * @return string
-     */
-    protected function getStubName(): string
+    public function stubFile()
     {
         if ($this->option('queued')) {
             if ($this->option('event')) {
-                return '/listener-queued.stub';
+                return 'listener-queued.stub';
             }
 
-            return '/listener-queued-duck.stub';
+            return 'listener-queued-duck.stub';
         }
 
         if ($this->option('event')) {
-            return '/listener.stub';
+            return 'listener.stub';
         }
 
-        return '/listener-duck.stub';
+        return 'listener-duck.stub';
     }
 }

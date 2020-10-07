@@ -5,11 +5,14 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Migrations\Migrator;
 use Nwidart\Modules\Module;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class MigrateStatusCommand extends Command
 {
+    use ModuleCommandTrait
+
     /**
      * The console command name.
      *
@@ -49,7 +52,7 @@ class MigrateStatusCommand extends Command
         }
 
         foreach ($this->module->getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
+            $this->info('Running for module: <info>' . $module->getName() . '</info>');
             $this->migrateStatus($module);
         }
 

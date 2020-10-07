@@ -3,10 +3,13 @@
 namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class DumpCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -24,14 +27,14 @@ class DumpCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->info('Generating optimized autoload modules.');
 
         if ($module = $this->argument('module')) {
             $this->dump($module);
         } else {
-            foreach ($this->laravel['modules']->all() as $module) {
+            foreach ($this->getModules()->all() as $module) {
                 $this->dump($module->getStudlyName());
             }
         }
@@ -41,9 +44,9 @@ class DumpCommand extends Command
 
     public function dump($module)
     {
-        $module = $this->laravel['modules']->findOrFail($module);
+        $module = $this->getModule($module);
 
-        $this->line("<comment>Running for module</comment>: {$module}");
+        $this->info("Running for <info>{$module}</info> module");
 
         chdir($module->getPath());
 

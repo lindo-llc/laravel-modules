@@ -17,12 +17,6 @@ class ResourceMakeCommand extends GeneratorCommand
     protected $name = 'module:make-resource';
     protected $description = 'Create a new resource class for the specified module.';
 
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.resource.namespace') ?: $module->config('paths.generator.resource.path', 'Transformers');
-    }
 
     /**
      * Get the console command arguments.
@@ -45,36 +39,15 @@ class ResourceMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'NAMESPACE' => $this->getClassNamespace($module),
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
             'CLASS'     => $this->getClass(),
-        ]))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $resourcePath = GenerateConfigReader::read('resource');
-
-        return $path . $resourcePath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
+        ];
     }
 
     /**
@@ -82,16 +55,17 @@ class ResourceMakeCommand extends GeneratorCommand
      *
      * @return bool
      */
-    protected function collection() : bool
+    protected function collection(): bool
     {
         return $this->option('collection') ||
             Str::endsWith($this->argument('name'), 'Collection');
     }
 
     /**
+     * @inheritDoc
      * @return string
      */
-    protected function getStubName(): string
+    public function stubFile()
     {
         if ($this->collection()) {
             return '/resource-collection.stub';

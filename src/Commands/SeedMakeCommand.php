@@ -24,6 +24,13 @@ class SeedMakeCommand extends GeneratorCommand
     protected $name = 'module:make-seed';
 
     /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'seeder.stub';
+
+    /**
      * The console command description.
      *
      * @var string
@@ -61,32 +68,17 @@ class SeedMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/seeder.stub', [
-            'NAME' => $this->getSeederName(),
+        return [
+            'NAME' => $this->getFileName(),
             'MODULE' => $this->getModuleName(),
-            'NAMESPACE' => $this->getClassNamespace($module),
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
 
-        ]))->render();
-    }
-
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $this->clearCache();
-
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $seederPath = GenerateConfigReader::read('seeder');
-
-        return $path . $seederPath->getPath() . '/' . $this->getSeederName() . '.php';
+        ];
     }
 
     /**
@@ -94,22 +86,10 @@ class SeedMakeCommand extends GeneratorCommand
      *
      * @return string
      */
-    private function getSeederName()
+    protected function getFileName(): string
     {
         $end = $this->option('master') ? 'DatabaseSeeder' : 'TableSeeder';
 
-        return Str::studly($this->argument('name')) . $end;
-    }
-
-    /**
-     * Get default namespace.
-     *
-     * @return string
-     */
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.seeder.namespace') ?: $module->config('paths.generator.seeder.path', 'Database/Seeders');
+        return Str::studly($this->argument($this->argumentName)) . $end;
     }
 }

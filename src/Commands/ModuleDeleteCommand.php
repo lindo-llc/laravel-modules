@@ -3,18 +3,21 @@
 namespace Nwidart\Modules\Commands;
 
 use Illuminate\Console\Command;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class ModuleDeleteCommand extends Command
 {
+    use ModuleCommandTrait;
+
     protected $name = 'module:delete';
     protected $description = 'Delete a module from the application';
 
-    public function handle() : int
+    public function handle(): int
     {
         $this->laravel['modules']->delete($this->argument('module'));
 
-        $this->info("Module {$this->argument('module')} has been deleted.");
+        $this->success("{$this->argument('module')} module has been deleted.");
 
         return 0;
     }

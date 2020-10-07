@@ -17,7 +17,12 @@ class TestMakeCommand extends GeneratorCommand
     protected $name = 'module:make-test';
     protected $description = 'Create a new test class for the specified module.';
 
-    public function getDefaultNamespace() : string
+    /**
+     * Get default namespace.
+     *
+     * @return string
+     */
+    public function getDefaultNamespace(): string
     {
         $module = $this->laravel['modules'];
 
@@ -54,21 +59,30 @@ class TestMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-        $stub = '/unit-test.stub';
+        return [
+            'NAMESPACE' => $this->getClassNamespace($this->getModule()),
+            'CLASS'     => $this->getClass(),
+        ];
+    }
+
+    /**
+     * @inheritDoc
+     * @return string
+     */
+    public function stubFile()
+    {
+        $stub = 'unit-test.stub';
 
         if ($this->option('feature')) {
-            $stub = '/feature-test.stub';
+            $stub = 'feature-test.stub';
         }
 
-        return (new Stub($stub, [
-            'NAMESPACE' => $this->getClassNamespace($module),
-            'CLASS'     => $this->getClass(),
-        ]))->render();
+        return $stub;
     }
 
     /**
@@ -85,13 +99,5 @@ class TestMakeCommand extends GeneratorCommand
         }
 
         return $path . $testPath->getPath() . '/' . $this->getFileName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    private function getFileName()
-    {
-        return Str::studly($this->argument('name'));
     }
 }

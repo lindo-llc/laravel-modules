@@ -28,13 +28,20 @@ class ModelMakeCommand extends GeneratorCommand
     protected $name = 'module:make-model';
 
     /**
+     * Stub file name
+     *
+     * @var null|string
+     */
+    protected $stubFile = 'model.stub';
+
+    /**
      * The console command description.
      *
      * @var string
      */
     protected $description = 'Create a new model for the specified module.';
 
-    public function handle() : int
+    public function handle(): int
     {
         if (parent::handle() === E_ERROR) {
             return E_ERROR;
@@ -57,7 +64,7 @@ class ModelMakeCommand extends GeneratorCommand
 
         $string = '';
         foreach ($pieces as $i => $piece) {
-            if ($i+1 < count($pieces)) {
+            if ($i + 1 < count($pieces)) {
                 $string .= strtolower($piece) . '_';
             } else {
                 $string .= Str::plural(strtolower($piece));
@@ -105,35 +112,23 @@ class ModelMakeCommand extends GeneratorCommand
     }
 
     /**
-     * @return mixed
+     * @inheritDoc
+     * @return array
      */
-    protected function getTemplateContents()
+    public function replaces()
     {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub('/model.stub', [
+        return [
             'NAME'              => $this->getModelName(),
             'FILLABLE'          => $this->getFillable(),
-            'NAMESPACE'         => $this->getClassNamespace($module),
+            'NAMESPACE'         => $this->getClassNamespace($this->getModule()),
             'CLASS'             => $this->getClass(),
-            'LOWER_NAME'        => $module->getLowerName(),
+            'LOWER_NAME'        => $this->getModule()->getLowerName(),
             'MODULE'            => $this->getModuleName(),
-            'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => $this->laravel['modules']->config('namespace'),
-        ]))->render();
+            'STUDLY_NAME'       => $this->getModule()->getStudlyName(),
+            'MODULE_NAMESPACE'  => $this->getModules()->config('namespace'),
+        ];
     }
 
-    /**
-     * @return mixed
-     */
-    protected function getDestinationFilePath()
-    {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $modelPath = GenerateConfigReader::read('model');
-
-        return $path . $modelPath->getPath() . '/' . $this->getModelName() . '.php';
-    }
 
     /**
      * @return mixed|string
@@ -157,17 +152,5 @@ class ModelMakeCommand extends GeneratorCommand
         }
 
         return '[]';
-    }
-
-    /**
-     * Get default namespace.
-     *
-     * @return string
-     */
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.model.namespace') ?: $module->config('paths.generator.model.path', 'Entities');
     }
 }

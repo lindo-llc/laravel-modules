@@ -5,10 +5,13 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Module;
 use Nwidart\Modules\Publishing\LangPublisher;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class PublishTranslationCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -26,7 +29,7 @@ class PublishTranslationCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         if ($name = $this->argument('module')) {
             $this->publish($name);
@@ -44,7 +47,7 @@ class PublishTranslationCommand extends Command
      */
     public function publishAll()
     {
-        foreach ($this->laravel['modules']->allEnabled() as $module) {
+        foreach ($this->getModules()->allEnabled() as $module) {
             $this->publish($module);
         }
     }
@@ -59,15 +62,15 @@ class PublishTranslationCommand extends Command
         if ($name instanceof Module) {
             $module = $name;
         } else {
-            $module = $this->laravel['modules']->findOrFail($name);
+            $module = $this->getModules()->findOrFail($name);
         }
 
         with(new LangPublisher($module))
-            ->setRepository($this->laravel['modules'])
+            ->setRepository($this->getModules())
             ->setConsole($this)
             ->publish();
 
-        $this->line("<info>Published</info>: {$module->getStudlyName()}");
+        $this->success("Successfully published {$module->getStudlyName()} module");
     }
 
     /**

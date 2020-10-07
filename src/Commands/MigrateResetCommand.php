@@ -34,7 +34,7 @@ class MigrateResetCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->module = $this->laravel['modules'];
 
@@ -47,7 +47,7 @@ class MigrateResetCommand extends Command
         }
 
         foreach ($this->module->getOrdered($this->option('direction')) as $module) {
-            $this->line('Running for module: <info>' . $module->getName() . '</info>');
+            $this->info('Running for module: <info>' . $module->getName() . '</info>');
 
             $this->reset($module);
         }
@@ -78,13 +78,13 @@ class MigrateResetCommand extends Command
 
         if (count($migrated)) {
             foreach ($migrated as $migration) {
-                $this->line("Rollback: <info>{$migration}</info>");
+                $this->info("Rolling back: <info>{$migration}</info>");
             }
 
             return;
         }
 
-        $this->comment('Nothing to rollback.');
+        $this->warning('Nothing to rollback');
     }
 
     /**

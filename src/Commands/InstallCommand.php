@@ -5,11 +5,14 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Json;
 use Nwidart\Modules\Process\Installer;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 
 class InstallCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -35,7 +38,7 @@ class InstallCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         if (is_null($this->argument('name'))) {
             return $this->installFromFile();
@@ -54,10 +57,10 @@ class InstallCommand extends Command
     /**
      * Install modules from modules.json file.
      */
-    protected function installFromFile() : int
+    protected function installFromFile(): int
     {
         if (!file_exists($path = base_path('modules.json'))) {
-            $this->error("File 'modules.json' does not exist in your project root.");
+            $this->critical("File 'modules.json' does not exist in your project root.");
 
             return E_ERROR;
         }
@@ -96,7 +99,7 @@ class InstallCommand extends Command
             $tree ?: $this->option('tree')
         );
 
-        $installer->setRepository($this->laravel['modules']);
+        $installer->setRepository($this->getModules());
 
         $installer->setConsole($this);
 

@@ -2,9 +2,6 @@
 
 namespace Nwidart\Modules\Commands;
 
-use Illuminate\Support\Str;
-use Nwidart\Modules\Support\Config\GenerateConfigReader;
-use Nwidart\Modules\Support\Stub;
 use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
@@ -28,6 +25,13 @@ class ControllerMakeCommand extends GeneratorCommand
     protected $name = 'module:make-controller';
 
     /**
+     * Appendable resource name
+     *
+     * @var null|string
+     */
+    protected $appendable = 'Controller';
+
+    /**
      * The console command description.
      *
      * @var string
@@ -35,38 +39,23 @@ class ControllerMakeCommand extends GeneratorCommand
     protected $description = 'Generate new restful controller for the specified module.';
 
     /**
-     * Get controller name.
-     *
-     * @return string
+     * @inheritDoc
+     * @return array
      */
-    public function getDestinationFilePath()
+    public function replaces()
     {
-        $path = $this->laravel['modules']->getModulePath($this->getModuleName());
-
-        $controllerPath = GenerateConfigReader::read('controller');
-
-        return $path . $controllerPath->getPath() . '/' . $this->getControllerName() . '.php';
-    }
-
-    /**
-     * @return string
-     */
-    protected function getTemplateContents()
-    {
-        $module = $this->laravel['modules']->findOrFail($this->getModuleName());
-
-        return (new Stub($this->getStubName(), [
-            'MODULENAME'        => $module->getStudlyName(),
-            'CONTROLLERNAME'    => $this->getControllerName(),
-            'NAMESPACE'         => $module->getStudlyName(),
-            'CLASS_NAMESPACE'   => $this->getClassNamespace($module),
-            'CLASS'             => $this->getControllerNameWithoutNamespace(),
-            'LOWER_NAME'        => $module->getLowerName(),
+        return [
+            'MODULENAME'        => $this->getModuleName(),
+            'CONTROLLERNAME'    => $this->getFileName(),
+            'NAMESPACE'         => $this->getModuleName(),
+            'CLASS_NAMESPACE'   => $this->getClassNamespace($this->getModule()),
+            'CLASS'             => $this->getClass(),
+            'LOWER_NAME'        => $this->getModule()->getLowerName(),
             'MODULE'            => $this->getModuleName(),
             'NAME'              => $this->getModuleName(),
-            'STUDLY_NAME'       => $module->getStudlyName(),
-            'MODULE_NAMESPACE'  => $this->laravel['modules']->config('namespace'),
-        ]))->render();
+            'STUDLY_NAME'       => $this->getModuleName(),
+            'MODULE_NAMESPACE'  => $this->getModules()->config('namespace'),
+        ];
     }
 
     /**
@@ -92,50 +81,22 @@ class ControllerMakeCommand extends GeneratorCommand
             ['api', null, InputOption::VALUE_NONE, 'Exclude the create and edit methods from the controller.'],
         ];
     }
-
     /**
-     * @return array|string
+     * @inheritDoc
+     * @return null|string
      */
-    protected function getControllerName()
+    public function stubFile()
     {
-        $controller = Str::studly($this->argument('controller'));
+        $stubType = '';
 
-        if (Str::contains(strtolower($controller), 'controller') === false) {
-            $controller .= 'Controller';
+        if ($this->option('api') === true) {
+            $stubType = '-api';
         }
 
-        return $controller;
-    }
-
-    /**
-     * @return array|string
-     */
-    private function getControllerNameWithoutNamespace()
-    {
-        return class_basename($this->getControllerName());
-    }
-
-    public function getDefaultNamespace() : string
-    {
-        $module = $this->laravel['modules'];
-
-        return $module->config('paths.generator.controller.namespace') ?: $module->config('paths.generator.controller.path', 'Http/Controllers');
-    }
-
-    /**
-     * Get the stub file name based on the options
-     * @return string
-     */
-    protected function getStubName()
-    {
         if ($this->option('plain') === true) {
-            $stub = '/controller-plain.stub';
-        } elseif ($this->option('api') === true) {
-            $stub = '/controller-api.stub';
-        } else {
-            $stub = '/controller.stub';
+            $stubType = '-plain';
         }
 
-        return $stub;
+        return "constroller{$stubType}.stub";
     }
 }

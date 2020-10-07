@@ -4,6 +4,8 @@ namespace Nwidart\Modules\Traits;
 
 trait ModuleCommandTrait
 {
+    use ModuleMessages;
+
     /**
      * Get modules
      *

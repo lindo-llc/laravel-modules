@@ -5,10 +5,13 @@ namespace Nwidart\Modules\Commands;
 use Illuminate\Console\Command;
 use Nwidart\Modules\Module;
 use Nwidart\Modules\Publishing\AssetPublisher;
+use Nwidart\Modules\Traits\ModuleCommandTrait;
 use Symfony\Component\Console\Input\InputArgument;
 
 class PublishCommand extends Command
 {
+    use ModuleCommandTrait;
+
     /**
      * The console command name.
      *
@@ -26,7 +29,7 @@ class PublishCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle() : int
+    public function handle(): int
     {
         if ($name = $this->argument('module')) {
             $this->publish($name);
@@ -67,7 +70,7 @@ class PublishCommand extends Command
             ->setConsole($this)
             ->publish();
 
-        $this->line("<info>Published</info>: {$module->getStudlyName()}");
+        $this->success("Successfully published {$module->getStudlyName()} module");
     }
 
     /**
