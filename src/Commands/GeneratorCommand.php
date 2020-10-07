@@ -105,7 +105,7 @@ abstract class GeneratorCommand extends Command
      */
     protected function getTemplateContents()
     {
-        return (new Stub($this->stubFile(), $this->replaces()))->render();
+        return (new Stub("/" . $this->stubFile(), $this->replaces()))->render();
     }
 
     /**
