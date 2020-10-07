@@ -11,7 +11,7 @@ use Symfony\Component\Console\Input\InputOption;
 
 class MigrateStatusCommand extends Command
 {
-    use ModuleCommandTrait
+    use ModuleCommandTrait;
 
     /**
      * The console command name.
@@ -37,7 +37,7 @@ class MigrateStatusCommand extends Command
      *
      * @return mixed
      */
-    public function handle() : int
+    public function handle(): int
     {
         $this->module = $this->laravel['modules'];
 
