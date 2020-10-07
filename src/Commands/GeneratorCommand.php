@@ -164,7 +164,7 @@ abstract class GeneratorCommand extends Command
     {
         $this->before();
 
-        if ($this->run() != E_ERROR) {
+        if ($this->executeCommand() != E_ERROR) {
             $this->after();
         }
 
@@ -196,7 +196,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return integer
      */
-    private function run(): int
+    private function executeCommand(): int
     {
         $path = str_replace('\\', '/', $this->getDestinationFilePath());
 
