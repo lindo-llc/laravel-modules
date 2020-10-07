@@ -46,4 +46,14 @@ trait ModuleCommandTrait
     {
         return $this->getModule()->getStudlyName();
     }
+
+    /**
+     * Get module path
+     *
+     * @return string
+     */
+    public function getModulePath()
+    {
+        return $this->getModules()->getModulePath($this->getModuleName());
+    }
 }
