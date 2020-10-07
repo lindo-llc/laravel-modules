@@ -103,7 +103,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return mixed
      */
-    protected function getTemplateContents()
+    public function getTemplateContents()
     {
         return (new Stub($this->stubFile(), $this->replaces()))->render();
     }
@@ -125,7 +125,7 @@ abstract class GeneratorCommand extends Command
      *
      * @return string
      */
-    protected function getDestinationFilePath()
+    public function getDestinationFilePath()
     {
         return  $this->getModulePath() . "/" .
             GenerateConfigReader::read($this->getGeneratorConfigKey())->getPath() . "/" .
